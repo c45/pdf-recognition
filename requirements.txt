@@ -5,3 +5,5 @@
 azure-functions
 azure-ai-formrecognizer
 azure-core
+azure-storage-blob
+azure-storage-file-share
