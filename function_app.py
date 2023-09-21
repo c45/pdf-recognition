@@ -1,60 +1,48 @@
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.formrecognizer import DocumentAnalysisClient
-from dotenv import load_dotenv
+from azure.storage.blob import ContainerClient
+from azure.storage.fileshare import ShareDirectoryClient
 import azure.functions as func
-import datetime
 import logging
 import json
 import os
-# app = func.FunctionApp()
+
+app = func.FunctionApp()
 
 
-# @app.schedule(schedule="* 1 * * * *", arg_name="myTimer", run_on_startup=True,
-#               use_monitor=False)
-# def TimerTrigger(myTimer: func.TimerRequest) -> None:
-#     utc_timestamp = datetime.datetime.utcnow().replace(
-#         tzinfo=datetime.timezone.utc).isoformat()
-
-#     if myTimer.past_due:
-#         logging.info('The timer is past due!')
-
-#     logging.info('Python timer trigger function ran at %s', utc_timestamp)
-
-load_dotenv()
-endpoint = os.getenv("ENDPOINT")
-key = os.getenv("KEY")
-
-
-formUrl = "https://cdn.discordapp.com/attachments/1118190224527335502/1152921940747616286/ALDT50_20221001.pdf"
-
-
-def analyze_read():
-    # sample document
-    # formUrl = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/sample-layout.pdf"
-
+def call_form_recognizer(file):
+    api_endpoint = os.getenv("ENDPOINT")
+    api_key = os.getenv("KEY")
     document_analysis_client = DocumentAnalysisClient(
-        endpoint=endpoint, credential=AzureKeyCredential(key)
+        endpoint=api_endpoint, credential=AzureKeyCredential(api_key)
     )
-
-    poller = document_analysis_client.begin_analyze_document_from_url(
-        "prebuilt-document", formUrl)
+    poller = document_analysis_client.begin_analyze_document(
+        "prebuilt-document", file)
     result = poller.result()
 
-    for kv in result.key_value_pairs:
-        if kv.key.content[-1] == ':' and kv.value:
-            print("{} {}".format(
-                kv.key.content, kv.value.content))
-        elif kv.key and kv.value:
-            print("{}: {}".format(
-                kv.key.content, kv.value.content))
+    return json.dumps(result.to_dict())
+
+
+@app.schedule(schedule="* /5 * * * *", arg_name="myTimer", run_on_startup=True, use_monitor=False)
+def TimerTrigger(myTimer: func.TimerRequest) -> None:
+
+    if myTimer.past_due:
+        logging.info("The timer is past due!")
+
+    share_client = ShareDirectoryClient.from_connection_string(
+        os.getenv("CONNECTION_STRING"), "pdf", "documents")
+
+    blob_client = ContainerClient.from_connection_string(
+        os.getenv("CONNECTION_STRING"), "output")
+
+    for item in list(share_client.list_directories_and_files()):
+        file_client = share_client.get_file_client(item["name"])
+
+        if not file_client.get_file_properties().metadata:
+            file = file_client.download_file().readall()
+            output = call_form_recognizer(file)
+            blob_client.upload_blob(
+                item["name"].replace(".pdf", ".json"), output)
+            file_client.set_file_metadata({"processed": "true"})
         else:
-            print("{}".format(kv.key.content))
-
-    dict = result.to_dict()
-
-    json_object = json.dumps(dict, indent=4)
-    with open("output.json", "w") as outfile:
-        outfile.write(json_object)
-
-
-analyze_read()
+            logging.error("File %s is already processed", item["name"])
