@@ -23,7 +23,7 @@ def call_form_recognizer(file):
     return json.dumps(result.to_dict())
 
 
-@app.schedule(schedule="0 0 */1 * *", arg_name="myTimer", run_on_startup=True, use_monitor=True)
+@app.schedule(schedule="0 30 9 * * 1-5", arg_name="myTimer", run_on_startup=False, use_monitor=True)
 def TimerTrigger(myTimer: func.TimerRequest) -> None:
 
     if myTimer.past_due:
@@ -46,3 +46,5 @@ def TimerTrigger(myTimer: func.TimerRequest) -> None:
             file_client.set_file_metadata({"processed": "true"})
         else:
             logging.error("File %s is already processed", item["name"])
+    share_client.close()
+    blob_client.close()
