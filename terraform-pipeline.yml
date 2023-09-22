@@ -13,7 +13,6 @@ trigger:
 stages:
   - stage: BuildAndDeployDEV
     displayName: 'Build and Deploy DEV'
-    condition: contains(variables['Build.SourceBranch'],'refs/heads/main')
     jobs:
     - job: TerraformInitAndValidate
       displayName: 'Terraform Install, Init, and Validate'
