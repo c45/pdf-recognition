@@ -65,6 +65,6 @@ jobs:
           app-name: 'pdftojsonfunc'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1BA78C85198B4DE2B591304D24746881 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_04AA87538F0D45078180F54020009BF6 }}
           scm-do-build-during-deployment: true
           enable-oryx-build: true
