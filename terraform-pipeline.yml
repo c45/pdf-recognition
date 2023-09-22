@@ -36,6 +36,7 @@ stages:
       - task: TerraformCLI@0
         inputs:
           command: 'validate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
           
       - task: TerraformCLI@0
         inputs:
