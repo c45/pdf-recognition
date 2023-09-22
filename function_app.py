@@ -23,17 +23,14 @@ def call_form_recognizer(file):
     return json.dumps(result.to_dict())
 
 
-@app.schedule(schedule="0 30 9 * * 1-5", arg_name="myTimer", run_on_startup=False, use_monitor=True)
-def TimerTrigger(myTimer: func.TimerRequest) -> None:
-
-    if myTimer.past_due:
-        logging.info("The timer is past due!")
+@app.schedule(schedule=os.getenv("NCRON_EXPRESSION"), arg_name="myTimer", run_on_startup=False, use_monitor=True)
+def function(myTimer: func.TimerRequest) -> None:
 
     share_client = ShareDirectoryClient.from_connection_string(
-        os.getenv("CONNECTION_STRING"), "pdf", "documents")
+        os.getenv("CONNECTION_STRING"), os.getenv("SHARE_NAME"), os.getenv("DIR_PATH"))
 
     blob_client = ContainerClient.from_connection_string(
-        os.getenv("CONNECTION_STRING"), "output")
+        os.getenv("CONNECTION_STRING"), os.getenv("CONTAINER_NAME"))
 
     for item in list(share_client.list_directories_and_files()):
         file_client = share_client.get_file_client(item["name"])
@@ -44,7 +41,8 @@ def TimerTrigger(myTimer: func.TimerRequest) -> None:
             blob_client.upload_blob(
                 item["name"].replace(".pdf", ".json"), output)
             file_client.set_file_metadata({"processed": "true"})
+            logging.info("File %s successfully processed", item["name"])
         else:
-            logging.error("File %s is already processed", item["name"])
+            logging.info("File %s is already processed", item["name"])
     share_client.close()
     blob_client.close()
