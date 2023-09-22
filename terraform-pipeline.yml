@@ -1,0 +1,46 @@
+
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - 'terraform-pipeline.yml'
+    - '**/*.tf'
+
+
+
+stages:
+  - stage: BuildAndDeployDEV
+    displayName: 'Build and Deploy DEV'
+    condition: contains(variables['Build.SourceBranch'],'refs/heads/main')
+    jobs:
+    - job: TerraformInitAndValidate
+      displayName: 'Terraform Install, Init, and Validate'
+      steps:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+        inputs:
+          terraformVersion: 'latest'
+      - task: TerraformCLI@0
+        inputs:
+          command: 'init'
+          backendType: 'azurerm'
+          backendServiceArm: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
+          backendAzureRmSubscriptionId: 'f4210fd4-9a8e-484e-b3ab-bf706abb3785'
+          backendAzureRmResourceGroupName: 'tfstate'
+          backendAzureRmStorageAccountName: 'bestrongtfsate'
+          backendAzureRmContainerName: 'tfstate'
+          backendAzureRmKey: 'terraform.tfstate'
+      
+
+      - task: TerraformCLI@0
+        inputs:
+          command: 'validate'
+          
+      - task: TerraformCLI@0
+        inputs:
+          command: 'apply'
+          environmentServiceName: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
+          providerAzureRmSubscriptionId: 'f4210fd4-9a8e-484e-b3ab-bf706abb3785'
+          runAzLogin: true
+          commandOptions: '--auto-approve'
