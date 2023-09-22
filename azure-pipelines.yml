@@ -11,7 +11,7 @@ variables:
   azureSubscription: '7447e55d-f9c3-4a78-bc4a-41495183a0d9'
 
   # Function app name
-  functionAppName: 'pdftojsonfunc'
+  functionAppName: 'bestrong-linux-function-app'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
