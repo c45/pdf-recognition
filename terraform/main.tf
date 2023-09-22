@@ -55,7 +55,6 @@ resource "azurerm_linux_function_app" "fapp" {
 
 
   app_settings = {
-    "WEBSITE_RUN_FROM_PACKAGE" = ""
     "FUNCTIONS_WORKER_RUNTIME" = "python"
     "ENDPOINT"                 = azurerm_cognitive_account.caccount.endpoint
     "KEY"                      = azurerm_cognitive_account.caccount.primary_access_key
