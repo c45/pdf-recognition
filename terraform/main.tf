@@ -49,9 +49,10 @@ resource "azurerm_linux_function_app" "fapp" {
   resource_group_name = azurerm_resource_group.rgroup.name
   location            = azurerm_resource_group.rgroup.location
 
-  # storage_account_name       = azurerm_storage_account.saccount.name
-  # storage_account_access_key = azurerm_storage_account.saccount.primary_access_key
+  storage_account_name       = azurerm_storage_account.saccount.name
+  storage_account_access_key = azurerm_storage_account.saccount.primary_access_key
   service_plan_id            = azurerm_service_plan.splan.id
+
 
 
   app_settings = {

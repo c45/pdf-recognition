@@ -7,7 +7,7 @@ variables:
   azureSubscription: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
 
   # Function app name
-  functionAppName: 'bestrong-linux-function-app'
+  functionAppName: 'pdfrecognizer'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
