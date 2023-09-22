@@ -69,6 +69,7 @@ stages:
           command: 'validate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     - job: waitForValidation
+      dependsOn: TerraformInitAndValidate
       displayName: Wait for external validation
       pool: server
       timeoutInMinutes: 4320
@@ -81,6 +82,7 @@ stages:
             instructions: 'Please validate the build configuration and resume'
             onTimeout: 'resume'
     - job: TerraformApply
+      dependsOn: waitForValidation
       displayName: 'Terraform Apply'
       steps:
         - task: TerraformCLI@0
