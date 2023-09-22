@@ -8,7 +8,7 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '7447e55d-f9c3-4a78-bc4a-41495183a0d9'
+  azureSubscription: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
 
   # Function app name
   functionAppName: 'bestrong-linux-function-app'
