@@ -30,6 +30,7 @@ stages:
           backendAzureRmStorageAccountName: 'bestrongtfsate'
           backendAzureRmContainerName: 'tfstate'
           backendAzureRmKey: 'terraform.tfstate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
       
 
       - task: TerraformCLI@0
@@ -42,4 +43,4 @@ stages:
           environmentServiceName: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
           providerAzureRmSubscriptionId: 'f4210fd4-9a8e-484e-b3ab-bf706abb3785'
           runAzLogin: true
-          commandOptions: '--auto-approve'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
