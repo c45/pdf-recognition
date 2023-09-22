@@ -45,15 +45,12 @@ resource "azurerm_service_plan" "splan" {
 
 
 resource "azurerm_linux_function_app" "fapp" {
-  name                = "bestrong-linux-function-app"
-  resource_group_name = azurerm_resource_group.rgroup.name
-  location            = azurerm_resource_group.rgroup.location
-
-  storage_account_name       = azurerm_storage_account.saccount.name
-  storage_account_access_key = azurerm_storage_account.saccount.primary_access_key
-  service_plan_id            = azurerm_service_plan.splan.id
-
-
+  name                 = "bestrong-linux-function-app"
+  resource_group_name  = azurerm_resource_group.rgroup.name
+  location             = azurerm_resource_group.rgroup.location
+  service_plan_id      = azurerm_service_plan.splan.id
+	storage_account_name = azurerm_storage_account.saccount.name
+	storage_account_access_key = azurerm_storage_account.saccount.primary_access_key
 
   app_settings = {
     "FUNCTIONS_WORKER_RUNTIME" = "python"
@@ -64,13 +61,15 @@ resource "azurerm_linux_function_app" "fapp" {
     "DIR_PATH"                 = azurerm_storage_share_directory.sdir.name
     "CONTAINER_NAME"           = azurerm_storage_container.scontainer.name
   }
-
-  site_config {}
+  site_config {
+    application_stack {
+      python_version = "3.10"
+    }
+  }
 }
 
-
 resource "azurerm_cognitive_account" "caccount" {
-  name                = "cognitive-account"
+  name                = "bestrong-formrecognizer"
   location            = azurerm_resource_group.rgroup.location
   resource_group_name = azurerm_resource_group.rgroup.name
   kind                = "FormRecognizer"
