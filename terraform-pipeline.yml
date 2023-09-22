@@ -9,11 +9,55 @@ trigger:
     - '**/*.tf'
 
 
-
 stages:
-  - stage: BuildAndDeployDEV
-    displayName: 'Build and Deploy DEV'
+  - stage: BuildonPR
+    displayName: 'Build on PR'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
     jobs:
+    - job: TerraformInitAndPlan
+      displayName: 'Terraform Init and Plan'
+      steps:
+      - task: TerraformCLI@0
+        inputs:
+          command: 'init'
+          backendType: 'azurerm'
+          backendServiceArm: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
+          backendAzureRmSubscriptionId: 'f4210fd4-9a8e-484e-b3ab-bf706abb3785'
+          backendAzureRmResourceGroupName: 'tfstate'
+          backendAzureRmStorageAccountName: 'bestrongtfsate'
+          backendAzureRmContainerName: 'tfstate'
+          backendAzureRmKey: 'terraform.tfstate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+
+      - task: TerraformCLI@0
+        inputs:
+          command: 'validate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      
+      - task: TerraformCLI@0
+        inputs:
+          command: 'plan'
+          environmentServiceName: 'Azure subscription 1(f4210fd4-9a8e-484e-b3ab-bf706abb3785)'
+          providerAzureRmSubscriptionId: 'f4210fd4-9a8e-484e-b3ab-bf706abb3785'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+          runAzLogin: true
+          commandOptions: '-out=tfplan'
+
+  - stage: BuildAndDeployPROD 
+    displayName: 'Build and Deploy PROD'
+    jobs:
+    - job: waitForValidation
+      displayName: Wait for external validation
+      pool: server
+      timeoutInMinutes: 4320
+      steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 1440 
+        inputs:
+          notifyUsers: |
+            qwerty165343@gmail.com
+          instructions: 'Please validate the build configuration and resume'
+          onTimeout: 'resume'
     - job: TerraformInitAndValidate
       displayName: 'Terraform Install, Init, and Validate'
       steps:
@@ -31,13 +75,11 @@ stages:
           backendAzureRmContainerName: 'tfstate'
           backendAzureRmKey: 'terraform.tfstate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-      
-
       - task: TerraformCLI@0
         inputs:
           command: 'validate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-          
+
       - task: TerraformCLI@0
         inputs:
           command: 'apply'
