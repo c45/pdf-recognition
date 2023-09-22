@@ -43,7 +43,8 @@ stages:
           runAzLogin: true
           commandOptions: '-out=tfplan'
 
-  - stage: BuildAndDeployPROD 
+  - stage: BuildAndDeployPROD
+    dependsOn: 
     displayName: 'Build and Deploy PROD'
     jobs:
     - job: waitForValidation
