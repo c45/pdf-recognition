@@ -7,4 +7,5 @@ local.settings.json
 test
 .venv
 terraform
+azure_pipelines.yml
 README.md
