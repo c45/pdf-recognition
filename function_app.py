@@ -23,7 +23,7 @@ def call_form_recognizer(file):
     return json.dumps(result.to_dict())
 
 
-@app.schedule(schedule=os.getenv("NCRON_EXPRESSION"), arg_name="myTimer", run_on_startup=False, use_monitor=True)
+@app.schedule(schedule=os.getenv("0 30 22 * * *"), arg_name="myTimer", run_on_startup=False, use_monitor=True)
 def TimerTrigger(myTimer: func.TimerRequest) -> None:
 
     share_client = ShareDirectoryClient.from_connection_string(
