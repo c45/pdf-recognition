@@ -24,12 +24,12 @@ resource "azurerm_storage_blob" "blob" {
   storage_account_name   = azurerm_storage_account.saccount.name
   storage_container_name = azurerm_storage_container.scontainer.name
   type                   = "Block"
-  
+
 }
 
 data "azurerm_storage_account_blob_container_sas" "storage_sas" {
   connection_string = azurerm_storage_account.saccount.primary_blob_connection_string
-  container_name = azurerm_storage_container.scontainer.name
+  container_name    = azurerm_storage_container.scontainer.name
 
   https_only = false
 
@@ -61,8 +61,6 @@ resource "azurerm_storage_share" "sshare" {
 resource "azurerm_storage_share_file" "sfile" {
   name             = "pdf"
   storage_share_id = azurerm_storage_share.sshare.id
-  path = "./pdf"
-  
 }
 
 resource "azurerm_service_plan" "splan" {
@@ -81,8 +79,18 @@ resource "azurerm_linux_function_app" "fapp" {
   storage_account_name       = azurerm_storage_account.saccount.name
   storage_account_access_key = azurerm_storage_account.saccount.primary_access_key
   service_plan_id            = azurerm_service_plan.splan.id
-  
-  site_config {}
+
+
+  app_settings = {
+    "WEBSITE_RUN_FROM_PACKAGE" = ""
+    "FUNCTIONS_WORKER_RUNTIME" = "python"
+    "ENDPOINT"                 = azurerm_cognitive_account.caccount.endpoint
+    "KEY"                      = azurerm_cognitive_account.caccount.primary_access_key
+  }
+
+  site_config {
+    # linux_fx_version = "python|3.10"
+  }
 }
 
 resource "azurerm_cognitive_account" "caccount" {
