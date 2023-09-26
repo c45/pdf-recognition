@@ -7,7 +7,14 @@ trigger:
     include:
     - 'terraform-pipeline.yml'
     - '**/*.tf'
-
+pr:
+  branches:
+    include:
+      - "*"
+  paths:
+    include:
+    - 'terraform-pipeline.yml'
+    - '**/*.tf'
 
 stages:
   - stage: BuildonPR
