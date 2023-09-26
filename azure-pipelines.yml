@@ -1,5 +1,18 @@
 trigger:
-- master
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - '**/*.py'
+
+pr:
+  branches:
+    include:
+    - "*"
+  paths:
+    include:
+    - '**/*.py'
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
@@ -15,9 +28,9 @@ variables:
   workingDirectory: '.'
 
 stages:
-- stage: Build
-  displayName: Build stage
-
+- stage: BuildonPR
+  displayName: 'Build on PR'
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   jobs:
   - job: Build
     displayName: Build
@@ -37,6 +50,31 @@ stages:
       inputs:
         versionSpec: '3.10'
 
+    - bash: |
+        pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
+      workingDirectory: $(workingDirectory)
+      displayName: 'Install application dependencies'
+
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - bash: |
+        if [ -f extensions.csproj ]
+        then
+            dotnet build extensions.csproj --runtime ubuntu.16.04-x64 --output ./bin
+        fi
+      workingDirectory: $(workingDirectory)
+      displayName: 'Build extensions'
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.10'
+      inputs:
+        versionSpec: '3.10'
 
     - bash: |
         pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
@@ -58,7 +96,6 @@ stages:
   displayName: Deploy stage
   dependsOn: Build
   condition: succeeded()
-
   jobs:
   - deployment: Deploy
     displayName: Deploy
